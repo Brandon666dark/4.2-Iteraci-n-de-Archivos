@@ -1,0 +1,22 @@
+--- Lista Original ---
+Miriam
+carlos
+Manuel
+Brayan
+Daniel
+
+--- Lista en Mayúsculas ---
+MIRIAM
+CARLOS
+MANUEL
+BRAYAN
+DANIEL
+
+--- Lista Ordenada Alfabéticamente ---
+Brayan
+carlos
+Daniel
+Manuel
+Miriam
+
+Total de nombres: 5
