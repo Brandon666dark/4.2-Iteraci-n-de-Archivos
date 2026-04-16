@@ -1,22 +1,4 @@
---- Lista Original ---
-Miriam
-carlos
-Manuel
-Brayan
-Daniel
-
---- Lista en Mayúsculas ---
-MIRIAM
-CARLOS
-MANUEL
-BRAYAN
-DANIEL
-
---- Lista Ordenada Alfabéticamente ---
-Brayan
-carlos
-Daniel
-Manuel
-Miriam
-
+Lista original: Juan, Luis, Mario, Brandon, Miriam
+Lista en mayúsculas: JUAN, LUIS, MARIO, BRANDON, MIRIAM
+Lista ordenada: Brandon, Juan, Luis, Mario, Miriam
 Total de nombres: 5

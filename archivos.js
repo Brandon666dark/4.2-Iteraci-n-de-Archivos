@@ -1,101 +1,125 @@
+/**
+ * Tarea: 4.2 Iteración de Archivos
+ * Alumno: Brandon Rodriguez Villanueva
+ * Descripcion: Uso del modulo fs para creacion, lectura, validacion y busqueda de datos.
+ */
+
 const fs = require('fs');
 const readline = require('readline');
 
-// Configuración para la entrada de datos por consola
+// Configuración de la interfaz de consola
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
 });
 
-const archivoDatos = 'datos.txt';
-const archivoResultado = 'resultado.txt';
+const ARCHIVO_DATOS = 'datos.txt';
+const ARCHIVO_RESULTADO = 'resultado.txt';
+let nombres = [];
 
-/*Creación y captura de datos*/
-const nombres = [];
+// ---Creacion y captura de nombres ---
+function iniciarActividad() {
+    console.log("--- Registro de Nombres ---");
+    pedirNombres();
+}
 
-console.log("Ingrese al menos 5 nombres (escriba 'salir' para terminar):");
+function pedirNombres() {
+    rl.question(`Ingrese el nombre ${nombres.length + 1} (mínimo 5): `, (nombre) => {
+        const n = nombre.trim();
 
-rl.on('line', (input) => {
-    if (input.toLowerCase() === 'salir') {
-        if (nombres.length < 5) {
-            console.log(`Faltan nombres. Por favor ingrese al menos ${5 - nombres.length} más.`);
+        //Validaciones
+        if (n === "") {
+            console.log("Error: El nombre no puede estar vacío.");
+            pedirNombres();
+        } else if (nombres.includes(n)) {
+            console.log("Error: Este nombre ya fue ingresado.");
+            pedirNombres();
         } else {
-            procesarArchivos();
-            rl.close();
+            nombres.push(n);
+            if (nombres.length < 5) {
+                pedirNombres();
+            } else {
+                procesarDatos();
+            }
         }
-        return;
-    }
+    });
+}
 
-    // Validación: Evitar guardar nombres duplicados
-    if (nombres.includes(input.trim())) {
-        console.log("Este nombre ya fue ingresado. Intente con otro.");
-    } else if (input.trim() !== "") {
-        nombres.push(input.trim());
-        console.log(`Nombres registrados: ${nombres.length}`);
-    }
-});
-
-function procesarArchivos() {
+// --- Procesamiento y Escritura ---
+function procesarDatos() {
     try {
         // Guardar nombres en datos.txt
-        fs.writeFileSync(archivoDatos, nombres.join('\n'));
+        fs.writeFileSync(ARCHIVO_DATOS, nombres.join('\n'));
 
-        // Validaciones
-        if (!fs.existsSync(archivoDatos)) {
-            console.error("Error: El archivo datos.txt no existe.");
-            return;
+        //Validar si el archivo existe
+        if (!fs.existsSync(ARCHIVO_DATOS)) {
+            throw new Error("El archivo datos.txt no fue encontrado.");
         }
 
         // Leer contenido usando fs.readFileSync
-        const contenido = fs.readFileSync(archivoDatos, 'utf-8');
-
-        if (contenido.trim() === "") {
-            console.log("Notificación: El archivo está vacío.");
+        const contenido = fs.readFileSync(ARCHIVO_DATOS, 'utf-8');
+        
+        if (!contenido.trim()) {
+            console.log("El archivo está vacío.");
             return;
         }
 
-        // Mostrar contenido completo en consola
-        console.log("\n--- Contenido de datos.txt ---");
-        console.log(contenido);
-
-        /*Procesamiento de datos*/
-        const listaNombres = contenido.split('\n').filter(n => n.trim() !== "");
-        
-        console.log("\n--- Procesamiento ---");
-        let nombreMasLargo = "";
-        const listaMayusculas = listaNombres.map(nombre => {
-            const mayus = nombre.toUpperCase();
-            console.log(mayus);
-            
-            if (nombre.length > nombreMasLargo.length) {
-                nombreMasLargo = nombre;
-            }
-            return mayus;
-        });
-
-        const totalNombres = listaNombres.length;
+        // Procesar datos (Mayusculas, total, longitud, orden)
+        const listaNombres = contenido.split('\n');
+        const listaMayusculas = listaNombres.map(n => n.toUpperCase());
         const listaOrdenada = [...listaNombres].sort((a, b) => a.localeCompare(b));
+        const nombreMasLargo = listaNombres.reduce((a, b) => a.length >= b.length ? a : b);
 
-        console.log(`Total de nombres: ${totalNombres}`);
-        console.log(`Nombre con mayor longitud: ${nombreMasLargo}`);
-        console.log("Nombres ordenados:", listaOrdenada);
+        // Mostrar resultados en consola
+        console.log("\n--- Datos Procesados ---");
+        console.log("Total de nombres:", listaNombres.length);
+        console.log("Nombre más largo:", nombreMasLargo);
+        console.log("Lista ordenada:", listaOrdenada);
 
-        
-         /* Escritura de resultados*/
-        const contenidoResultado = [
-            "--- Lista Original ---",
-            listaNombres.join('\n'),
-            "\n--- Lista en Mayúsculas ---",
-            listaMayusculas.join('\n'),
-            "\n--- Lista Ordenada Alfabéticamente ---",
-            listaOrdenada.join('\n'),
-            `\nTotal de nombres: ${totalNombres}`
-        ].join('\n');
+        // Escritura de resultado.txt
+        const contenidoResultado = `
+Lista original: ${listaNombres.join(', ')}
+Lista en mayúsculas: ${listaMayusculas.join(', ')}
+Lista ordenada: ${listaOrdenada.join(', ')}
+Total de nombres: ${listaNombres.length}`;
 
-        fs.writeFileSync(archivoResultado, contenidoResultado);
-        console.log(`\nResultados guardados con éxito en ${archivoResultado}`);
+        fs.writeFileSync(ARCHIVO_RESULTADO, contenidoResultado.trim());
+        console.log(`\nArchivo '${ARCHIVO_RESULTADO}' generado con éxito.`);
 
-    } catch (error) {
-        console.error("Ocurrió un error inesperado:", error.message);
+        // Llamar a la busqueda
+        solicitarBusqueda();
+
+    } catch (err) {
+        console.error("Error:", err.message);
+        rl.close();
     }
 }
+
+// --- Buscar nombre---
+function solicitarBusqueda() {
+    console.log("\n--- Buscador de Nombres ---");
+    rl.question("Ingrese el nombre que desea buscar en el archivo: ", (nombreABuscar) => {
+        const contenido = fs.readFileSync(ARCHIVO_DATOS, 'utf-8');
+        const listaNombres = contenido.split('\n');
+        
+        let coincidencias = 0;
+
+        //Iterar los datos
+        listaNombres.forEach(nombre => {
+            if (nombre.trim().toLowerCase() === nombreABuscar.trim().toLowerCase()) {
+                coincidencias++;
+            }
+        });
+
+        if (coincidencias > 0) {
+            console.log(`\n¡Encontrado! El nombre "${nombreABuscar}" aparece ${coincidencias} vez/veces.`);
+        } else {
+            console.log(`\nEl nombre "${nombreABuscar}" no se encontró.`);
+        }
+
+        console.log("\nActividad finalizada.");
+        rl.close(); 
+    });
+}
+
+iniciarActividad();
